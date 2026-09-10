@@ -18,7 +18,8 @@ export default function NewReferral() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  const update = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+  const update = (field) => (e) =>
+    setForm({ ...form, [field]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,7 +43,9 @@ export default function NewReferral() {
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2500);
     } catch (err) {
-      setError(err.message ?? "Couldn't submit the referral. Please try again.");
+      setError(
+        err.message ?? "Couldn't submit the referral. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -60,28 +63,49 @@ export default function NewReferral() {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <Field label="Patient Name">
-        <input required value={form.patientName} onChange={update("patientName")} className={inputCls} />
+        <input
+          required
+          value={form.patientName}
+          onChange={update("patientName")}
+          className={inputCls}
+        />
       </Field>
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="Member #">
-          <input value={form.memberNo} onChange={update("memberNo")} className={inputCls} />
+          <input
+            value={form.memberNo}
+            onChange={update("memberNo")}
+            className={inputCls}
+          />
         </Field>
         <Field label="LHIMS #">
-          <input value={form.lhimsNo} onChange={update("lhimsNo")} className={inputCls} />
+          <input
+            value={form.lhimsNo}
+            onChange={update("lhimsNo")}
+            className={inputCls}
+          />
         </Field>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="Referral From">
-          <select value={form.referredFromDepartment} onChange={update("referredFromDepartment")} className={inputCls}>
+          <select
+            value={form.referredFromDepartment}
+            onChange={update("referredFromDepartment")}
+            className={inputCls}
+          >
             {DEPARTMENTS.map((d) => (
               <option key={d}>{d}</option>
             ))}
           </select>
         </Field>
         <Field label="Referral To">
-          <select value={form.referredToDepartment} onChange={update("referredToDepartment")} className={inputCls}>
+          <select
+            value={form.referredToDepartment}
+            onChange={update("referredToDepartment")}
+            className={inputCls}
+          >
             {DEPARTMENTS.map((d) => (
               <option key={d}>{d}</option>
             ))}
@@ -90,10 +114,12 @@ export default function NewReferral() {
       </div>
 
       <Field label="Your Name (Referring Doctor)">
-        <input required value={form.referredFromDoctorName} onChange={update("referredFromDoctorName")} className={inputCls} />
-        <p className="mt-1 text-xs text-slate-400">
-          Typing your name here counts as your signature on the generated form.
-        </p>
+        <input
+          required
+          value={form.referredFromDoctorName}
+          onChange={update("referredFromDoctorName")}
+          className={inputCls}
+        />
       </Field>
 
       <button
@@ -113,7 +139,9 @@ const inputCls =
 function Field({ label, children }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium text-slate-700">{label}</label>
+      <label className="mb-1.5 block text-sm font-medium text-slate-700">
+        {label}
+      </label>
       {children}
     </div>
   );
