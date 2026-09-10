@@ -12,9 +12,7 @@ import {
 import { db } from "./firebase";
 import { DEPARTMENTS } from "./departments";
 
-
-export default function IncomingReferrals() {
-  const [department, setDepartment] = useState(DEPARTMENTS[1]);
+export default function IncomingReferrals({ department, setDepartment }) {
   const [referrals, setReferrals] = useState([]);
   const [signingId, setSigningId] = useState(null);
   const [signerName, setSignerName] = useState("");
@@ -35,15 +33,24 @@ export default function IncomingReferrals() {
   const handleAccept = async (referral) => {
     if (!signerName.trim()) return;
     setError("");
+
+    // Remove it from view immediately rather than waiting on the snapshot
+    // listener's round trip — the listener will confirm this shortly after,
+    // but the doctor sees it disappear the instant they confirm.
+    setReferrals((prev) => prev.filter((r) => r.id !== referral.id));
+    setSigningId(null);
+    const name = signerName.trim();
+    setSignerName("");
+
     try {
       await updateDoc(doc(db, "referrals", referral.id), {
-        referredToDoctorName: signerName.trim(),
+        referredToDoctorName: name,
         referredToDate: serverTimestamp(),
         status: "ACCEPTED",
       });
-      setSigningId(null);
-      setSignerName("");
     } catch (err) {
+      // Put it back if the write actually failed.
+      setReferrals((prev) => [referral, ...prev]);
       setError(err.message ?? "Couldn't accept the referral.");
     }
   };
