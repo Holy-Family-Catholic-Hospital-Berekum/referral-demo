@@ -17,6 +17,7 @@ export default function IncomingReferrals({
   department,
   setDepartment,
   profile,
+  uid,
 }) {
   const [referrals, setReferrals] = useState([]);
   const [error, setError] = useState("");
@@ -31,7 +32,13 @@ export default function IncomingReferrals({
     return onSnapshot(
       q,
       (snapshot) => {
-        setReferrals(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+        // A doctor never sees (or accepts) a referral they sent themselves
+        // — that queue is for a different doctor to act on.
+        setReferrals(
+          snapshot.docs
+            .map((d) => ({ id: d.id, ...d.data() }))
+            .filter((r) => r.referredFromDoctorId !== uid),
+        );
       },
       (err) => {
         console.error("Incoming referrals listener error:", err);
@@ -40,7 +47,7 @@ export default function IncomingReferrals({
         );
       },
     );
-  }, [department]);
+  }, [department, uid]);
 
   const handleAccept = async (referral) => {
     setError("");

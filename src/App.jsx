@@ -29,7 +29,12 @@ function Shell() {
     );
     return onSnapshot(
       q,
-      (snapshot) => setPendingCount(snapshot.size),
+      (snapshot) => {
+        const count = snapshot.docs.filter(
+          (d) => d.data().referredFromDoctorId !== user.uid,
+        ).length;
+        setPendingCount(count);
+      },
       () => {},
     );
   }, [user, department]);
@@ -94,12 +99,13 @@ function Shell() {
 
       <main className="mx-auto max-w-3xl px-4 py-8">
         {tab === "new" ? (
-          <NewReferral profile={profile} />
+          <NewReferral profile={profile} uid={user.uid} />
         ) : (
           <IncomingReferrals
             department={department}
             setDepartment={setDepartment}
             profile={profile}
+            uid={user.uid}
           />
         )}
       </main>

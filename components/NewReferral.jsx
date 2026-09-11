@@ -11,7 +11,7 @@ const emptyForm = {
   referredToDepartment: DEPARTMENTS[1],
 };
 
-export default function NewReferral({ profile }) {
+export default function NewReferral({ profile, uid }) {
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -31,6 +31,7 @@ export default function NewReferral({ profile }) {
         lhimsNo: form.lhimsNo.trim(),
         referredFromDepartment: form.referredFromDepartment,
         referredFromDoctorName: profile.fullName,
+        referredFromDoctorId: uid,
         referredFromDate: serverTimestamp(),
         referredFromSignatureUrl: profile.signatureUrl,
         referredToDepartment: form.referredToDepartment,
