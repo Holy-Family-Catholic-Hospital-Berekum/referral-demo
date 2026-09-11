@@ -8,11 +8,10 @@ const emptyForm = {
   memberNo: "",
   lhimsNo: "",
   referredFromDepartment: DEPARTMENTS[0],
-  referredFromDoctorName: "",
   referredToDepartment: DEPARTMENTS[1],
 };
 
-export default function NewReferral() {
+export default function NewReferral({ profile }) {
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -31,11 +30,13 @@ export default function NewReferral() {
         memberNo: form.memberNo.trim(),
         lhimsNo: form.lhimsNo.trim(),
         referredFromDepartment: form.referredFromDepartment,
-        referredFromDoctorName: form.referredFromDoctorName.trim(),
+        referredFromDoctorName: profile.fullName,
         referredFromDate: serverTimestamp(),
+        referredFromSignatureUrl: profile.signatureUrl,
         referredToDepartment: form.referredToDepartment,
         referredToDoctorName: null,
         referredToDate: null,
+        referredToSignatureUrl: null,
         status: "PENDING",
         createdAt: serverTimestamp(),
       });
@@ -113,14 +114,17 @@ export default function NewReferral() {
         </Field>
       </div>
 
-      <Field label="Your Name (Referring Doctor)">
-        <input
-          required
-          value={form.referredFromDoctorName}
-          onChange={update("referredFromDoctorName")}
-          className={inputCls}
+      <div className="flex items-center gap-3 rounded-md bg-slate-50 px-3 py-2">
+        <img
+          src={profile.signatureUrl}
+          alt="Your saved signature"
+          className="h-10 object-contain"
         />
-      </Field>
+        <p className="text-sm text-slate-500">
+          Signing as{" "}
+          <span className="font-medium text-slate-700">{profile.fullName}</span>
+        </p>
+      </div>
 
       <button
         type="submit"

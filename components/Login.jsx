@@ -27,12 +27,18 @@ export default function Login() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-8 shadow-sm"
       >
-        <h1 className="text-xl font-semibold text-slate-900">Referral Bridge</h1>
-        <p className="mt-1 text-sm text-slate-500">Sign in with your doctor account.</p>
+        <h1 className="text-xl font-semibold text-slate-900">
+          Referral Bridge
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Sign in with your doctor account.
+        </p>
 
         <div className="mt-6 space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Email</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Email
+            </label>
             <input
               type="email"
               required
@@ -42,7 +48,9 @@ export default function Login() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Password</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Password
+            </label>
             <input
               type="password"
               required

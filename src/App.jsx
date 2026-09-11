@@ -8,15 +8,18 @@ import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../components/firebase";
 import { DEPARTMENTS } from "../components/departments";
 
+import { useDoctorProfile } from "../components/useDoctorProfile";
+
+import SignatureSetup from "../components/SignatureSetup";
+
 function Shell() {
   const { user, loading, logout } = useAuth();
+  const { profile, loading: profileLoading } = useDoctorProfile(user?.uid);
+  const [editingSignature, setEditingSignature] = useState(false);
   const [tab, setTab] = useState("new");
   const [department, setDepartment] = useState(DEPARTMENTS[1]);
   const [pendingCount, setPendingCount] = useState(0);
 
-  // Lightweight listener just for the badge count, scoped to whichever
-  // department is currently selected on the Incoming Referrals tab, so the
-  // number shown always matches what that tab would show if opened.
   useEffect(() => {
     if (!user) return;
     const q = query(
@@ -27,29 +30,49 @@ function Shell() {
     return onSnapshot(
       q,
       (snapshot) => setPendingCount(snapshot.size),
-      () => {
-        // Same composite-index caveat as IncomingReferrals — badge just stays
-        // at its last known value if this listener errors.
-      },
+      () => {},
     );
   }, [user, department]);
 
-  if (loading) return null;
+  if (loading || (user && profileLoading)) return null;
   if (!user) return <Login />;
+
+  if (!profile?.signatureUrl || editingSignature) {
+    return (
+      <SignatureSetup
+        uid={user.uid}
+        existingName={profile?.fullName}
+        onDone={() => setEditingSignature(false)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-          <h1 className="text-base font-semibold text-slate-900">
-            Referral Bridge
-          </h1>
-          <button
-            onClick={logout}
-            className="text-sm text-slate-500 hover:text-slate-700"
-          >
-            Sign out
-          </button>
+          <div>
+            <h1 className="text-base font-semibold text-slate-900">
+              Referral Bridge
+            </h1>
+            <p className="text-xs text-slate-400">
+              Signed in as {profile.fullName}
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setEditingSignature(true)}
+              className="text-sm text-slate-500 hover:text-slate-700"
+            >
+              Update signature
+            </button>
+            <button
+              onClick={logout}
+              className="text-sm text-slate-500 hover:text-slate-700"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
         <div className="mx-auto flex max-w-3xl gap-1 px-4">
           <TabButton active={tab === "new"} onClick={() => setTab("new")}>
@@ -71,11 +94,12 @@ function Shell() {
 
       <main className="mx-auto max-w-3xl px-4 py-8">
         {tab === "new" ? (
-          <NewReferral />
+          <NewReferral profile={profile} />
         ) : (
           <IncomingReferrals
             department={department}
             setDepartment={setDepartment}
+            profile={profile}
           />
         )}
       </main>

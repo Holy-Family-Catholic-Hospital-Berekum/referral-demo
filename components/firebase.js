@@ -5,12 +5,12 @@ import { getFirestore } from "firebase/firestore";
 // Replace with your Firebase project's config (Project settings > General
 // > Your apps > SDK setup and configuration).
 const firebaseConfig = {
-  apiKey: "AIzaSyDRIIx2mlNu0IulJBPjOvf03GNdeeLj1gk",
-  authDomain: "referral-demo-401fe.firebaseapp.com",
-  projectId: "referral-demo-401fe",
-  storageBucket: "referral-demo-401fe.firebasestorage.app",
-  messagingSenderId: "592862335601",
-  appId: "1:592862335601:web:e2c5e4d3c2684bc172c1d0",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 export const app = initializeApp(firebaseConfig);

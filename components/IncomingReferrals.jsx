@@ -11,11 +11,14 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { DEPARTMENTS } from "./departments";
+import { downloadReferralForm } from "./referralFormCanvas";
 
-export default function IncomingReferrals({ department, setDepartment }) {
+export default function IncomingReferrals({
+  department,
+  setDepartment,
+  profile,
+}) {
   const [referrals, setReferrals] = useState([]);
-  const [signingId, setSigningId] = useState(null);
-  const [signerName, setSignerName] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -25,31 +28,42 @@ export default function IncomingReferrals({ department, setDepartment }) {
       where("status", "==", "PENDING"),
       orderBy("createdAt", "desc"),
     );
-    return onSnapshot(q, (snapshot) => {
-      setReferrals(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        setReferrals(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+      },
+      (err) => {
+        console.error("Incoming referrals listener error:", err);
+        setError(
+          "Live updates aren't connected right now (check the console for details).",
+        );
+      },
+    );
   }, [department]);
 
   const handleAccept = async (referral) => {
-    if (!signerName.trim()) return;
     setError("");
 
-    // Remove it from view immediately rather than waiting on the snapshot
-    // listener's round trip — the listener will confirm this shortly after,
-    // but the doctor sees it disappear the instant they confirm.
+    const accepted = {
+      ...referral,
+      referredToDoctorName: profile.fullName,
+      referredToDate: new Date(),
+      referredToSignatureUrl: profile.signatureUrl,
+      status: "ACCEPTED",
+    };
+
     setReferrals((prev) => prev.filter((r) => r.id !== referral.id));
-    setSigningId(null);
-    const name = signerName.trim();
-    setSignerName("");
 
     try {
       await updateDoc(doc(db, "referrals", referral.id), {
-        referredToDoctorName: name,
+        referredToDoctorName: accepted.referredToDoctorName,
         referredToDate: serverTimestamp(),
+        referredToSignatureUrl: accepted.referredToSignatureUrl,
         status: "ACCEPTED",
       });
+      await downloadReferralForm(accepted);
     } catch (err) {
-      // Put it back if the write actually failed.
       setReferrals((prev) => [referral, ...prev]);
       setError(err.message ?? "Couldn't accept the referral.");
     }
@@ -102,43 +116,21 @@ export default function IncomingReferrals({ department, setDepartment }) {
             </div>
 
             <div className="mt-3 flex items-center gap-2">
-              {signingId !== referral.id && (
-                <button
-                  type="button"
-                  onClick={() => setSigningId(referral.id)}
-                  className="rounded-md bg-[#2F6F62] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#265a50]"
-                >
-                  Accept &amp; Sign
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => downloadReferralForm(referral)}
+                className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+              >
+                Download Form
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAccept(referral)}
+                className="rounded-md bg-[#2F6F62] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#265a50]"
+              >
+                Accept &amp; Sign as {profile.fullName}
+              </button>
             </div>
-
-            {signingId === referral.id && (
-              <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
-                <input
-                  autoFocus
-                  placeholder="Your name"
-                  value={signerName}
-                  onChange={(e) => setSignerName(e.target.value)}
-                  className="w-48 rounded-md border border-slate-300 px-3 py-1.5 text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleAccept(referral)}
-                  disabled={!signerName.trim()}
-                  className="rounded-md bg-[#2F6F62] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#265a50] disabled:opacity-50"
-                >
-                  Confirm
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSigningId(null)}
-                  className="text-xs text-slate-400 hover:text-slate-600"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
           </div>
         ))}
       </div>
