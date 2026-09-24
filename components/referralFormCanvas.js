@@ -88,23 +88,21 @@ export async function downloadReferralForm(referral) {
   row("Date:", formatDate(referral.referredFromDate), leftX, 735, 760);
   row("Date:", formatDate(referral.referredToDate), rightX, 735, rightLineEnd);
 
-  // Fit the signature into the gap between the "Doctor:" line (~527) and
-  // the "Signature:" line (~632), with headroom on both sides.
   await drawSignature(
     context,
     referral.referredFromSignatureUrl,
-    290,
-    545,
-    380,
-    80,
+    285,
+    550,
+    300,
+    85,
   );
   await drawSignature(
     context,
     referral.referredToSignatureUrl,
-    1040,
-    545,
-    380,
-    80,
+    1035,
+    550,
+    300,
+    85,
   );
 
   const blob = await new Promise((resolve) =>
@@ -120,15 +118,17 @@ export async function downloadReferralForm(referral) {
   URL.revokeObjectURL(url);
 }
 
+const INK_FONT_FAMILY = "Arial, Helvetica, sans-serif";
+const measureContext = document.createElement("canvas").getContext("2d");
+
 function inkFontFor(value, maxWidth) {
-  const fontSizes = [48, 46, 44, 42, 40, 38, 36, 34, 32];
+  const fontSizes = [40, 38, 36, 34, 32, 30, 28, 26];
   for (const size of fontSizes) {
-    const font = `bold ${size}px "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive`;
-    const measureContext = document.createElement("canvas").getContext("2d");
+    const font = `bold ${size}px ${INK_FONT_FAMILY}`;
     measureContext.font = font;
     if (measureContext.measureText(value).width <= maxWidth) return font;
   }
-  return 'bold 30px "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive';
+  return `bold 24px ${INK_FONT_FAMILY}`;
 }
 
 function formatDate(value) {
@@ -173,9 +173,7 @@ async function drawSignature(context, source, x, y, width, height) {
   const drawWidth = crop.width * scale;
   const drawHeight = crop.height * scale;
   const drawX = x + (width - drawWidth) / 2;
-  // Bottom-align rather than vertically center: a signature should rest
-  // just above the line, not float through the middle of its box.
-  const drawY = y + height - drawHeight;
+  const drawY = y + (height - drawHeight) / 2;
   const signatureCanvas = document.createElement("canvas");
   signatureCanvas.width = crop.width;
   signatureCanvas.height = crop.height;
